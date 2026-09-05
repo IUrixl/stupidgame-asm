@@ -1,0 +1,109 @@
+// psedocodigo antes de convertirlo a asm
+
+fn load_file(file_name: si):
+	inherit file_name.segment
+
+	alloc bl -> app_cluster
+
+	let root_pos = 0x8000
+	let fat_pos = 0x9c00
+	const system_segment = 0x0000
+	const first_data_sector = 33
+	const package_firm_offset = 0xAE00 // despues del fat, ahi cargaremos el primer cluster para comprobar el package y moverlo a la posicion del package
+	let package_offset 
+	let package_segment
+
+	iter_root();
+
+	fn iter_root():
+		let current_read = read_bits(root_segment, 11) // 11 bytes
+		compare_bits(current_read, file_name)
+		+ set(bl, read_bits_offseted(root_segment, 28, 2)) // guardamos primer cluster
+		+ init_program(bl)
+		- root_pos += 20h
+		- iter_root()
+
+	fn init_program(first_cluster):
+		// cargamos cluster inicial
+		load_cluser(first_cluster, [package_firm_offset], [system_segment])
+		read_package()
+
+		iter_clusters(first_cluster)
+
+		ret
+
+	fn read_package():
+		move word (ax), [package_firm_offset + 3] // saltamos los 3 bytes de firma y cogemos el segment
+		move [package_segment], ax
+		
+		move word (ax), [package_firm_offset + 5] // saltamos los 5 bytes de package y cogemos el offset
+		move [package_offset], ax
+		ret
+
+	fn iter_clusters(cluster):
+		// cargamos el cluster actual
+		load_cluster(cluster, package_offset, package_segment)
+
+		let next_cluster = get_next_cluster(cluster)
+
+		// miramos si es el ultimo cluster
+		compare(cluster, 0xFF8) // 0xFF8 hasta 0xFFF estan reservados por el FAT12 para marcar end of chain, los clusters son unsigned, si nuestro cluster apunta a algo en ese rango entonces paramos
+		unsigned_above_equal(
+			ret
+		)
+
+		iter_clusters()
+
+	fn load_cluster(cluster, offset, segment):
+		template_lba_req.lba[2 first bytes] = lba_calc // solo los dos primeros bytes de la qword
+		template_lba_req.offset = offset 
+		template_lba_req.segment = segment
+
+		call load_lba
+		ret
+
+	fn wipe_package():
+		set_initial(cx, 512) // una vez, decimos que queremos limpiar 512 bytes
+
+		move byte (es(0x0000):[package_firm_offset]), 0
+		increase package_firm_offset
+		decrease cx
+
+		compare(cx, 0)
+		+ end
+
+	fn get_next_cluster(cluster):
+		let offset = cluster + cluster / 2
+		let content = fat_pos + offset
+
+		test cluster, 1 // par o impar
+
+		// el cluster va dado en 12 bits, pero una word (2bytes) son 16, si es par entonces los primero 4 bits los borramos con mascara
+		// si es impar entonces los ultimos 4 bits los borramos desplazando 4 posiciones, asi nos quedan 12 bits, siendo una word con los primeros 4 bits apagados y los otros 12 con la informacion
+		jump_zero(
+			mask(content, 0xFFF) // 0xFFF -> 0000 1111 1111 1111 (12)
+		) // si es par, me quedo con los 12 inferiores
+		not_zero(
+			shift_right(content, 4) // Desplazamos
+		)
+
+		return_value(content)
+
+	template_lba_req:
+		.sectors: dw 1
+		.lba: dq 0 // cuando movamos el lba obtenido por cluster, solo tocamos los 2 primeros, el reto se queda en 0, no tenemos tantos LBAs
+		.offset: dw 0x0000
+		.segment: dw 0x0000
+
+	; la direccion de SI apunta a una string
+	; el root se carga en 0x8000
+
+	; 32 bytes por entrada
+	; 1 - nombre - 8 bytes
+	; 2 - extension - 3 bytes
+	; 3 - attributos - 1 bytes
+	; 4 - Reservado, timestamps etc - 10 bytes
+	; 5 - Hora - 2 bytes
+	; 6 - Fecha - 2 bytes
+	; 7 - Primer cluster - 2 bytes
+	; 8 - Tamaño - 4 bytes
