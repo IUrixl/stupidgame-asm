@@ -23,4 +23,4 @@ Once you made sure you have the tools needed for compilation just open a CMD in 
 You can also build it with your own toolchain or whatever, it should work as long as you make it a FAT12 image.
 
 ### Making textures
-Textures in this project are UTA files, as stated [here](#about-the-runtime). In order to make one you must make a pixelart, export it to .PNG and use the official PNG to UTA conversor toolchain in this [repository](#). Don't make huge images as the conversor is pretty simple and we are limited to the 13H VGA color palette.
+Textures in this project are UTA files, as stated [here](#about-the-runtime). In order to make one you must make a pixelart, export it to .PNG and use the official PNG to UTA conversor toolchain in this [repository](https://github.com/IUrixl/uta-conversor). Don't make huge images as the conversor is pretty simple and we are limited to the 13H VGA color palette.

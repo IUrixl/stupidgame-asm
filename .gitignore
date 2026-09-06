@@ -1,4 +1,4 @@
-"*.log" 
+*.log
 bins/
 build/
 info/
