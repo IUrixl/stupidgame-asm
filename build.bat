@@ -4,6 +4,7 @@ setlocal EnableDelayedExpansion
 echo [1/4] Preparing...
 set "src=src"
 set "bins=bins"
+set "assets=assets"
 set "target=build\result.img"
 
 if exist bins rmdir /s /q bins
@@ -61,6 +62,17 @@ for %%F in (!bins!\*.bin) do (
 		fat_imgen -m -f !target! -s !_file!
 	) else (
 		echo(      -^> Found binary !_file!, attempting to add to the image...
+		fat_imgen -m -f !target! -i !_file!
+	)
+)
+
+rem assets to img
+if exist !assets! (
+	for %%F in (!assets!\*) do (
+		set "_file=%%F"
+		set "_rfile=%%~nxF"
+
+		echo(      -^> Found asset: !_file!, attempting to add to the image...
 		fat_imgen -m -f !target! -i !_file!
 	)
 )

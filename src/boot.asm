@@ -61,8 +61,7 @@ bootloader:
 	mov si, game_name
 	call load_file
 
-	hang:
-		jmp $
+	jmp $
 
 %include "src/utils/disk.asm"
 

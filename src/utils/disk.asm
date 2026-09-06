@@ -1,8 +1,7 @@
-;; codigo documentado para revisiones futuras xd, es un mierdero
+; codigo documentado para revisiones futuras xd, es un mierdero
 
 load_lba: ; usado para cargar estructuras sabiendo el tamaño y el sector inicial
 	push eax
-	push bx
 
 	mov bx, [si] ; cargamos los sectores (word)
 	mov word [dap.sectors], bx
@@ -26,7 +25,6 @@ load_lba: ; usado para cargar estructuras sabiendo el tamaño y el sector inicia
 	int 13h
 
 	pop si
-	pop bx
 	pop eax
 
 	ret
@@ -149,7 +147,7 @@ load_file: ; ds:si = dirrecion al nombre
 				; ahora procesaremos si debemos seguir en el bucle o romper
 				; para eso debemos ver si el valor (unsigned) del cluster es mayor a 0xFF8, ya que de 0xFF8 a 0xFFF estan reservados para el end of chain de fat
 				cmp bx, 0xFF8
-				jae end_cluster_iteration ; jae es jump if above or equal, asi acabamos ya la carga del archivo
+				jae load_clusters.end_cluster_iteration ; jae es jump if above or equal, asi acabamos ya la carga del archivo
 
 				; si aun queda por cargar
 				mov [cluster], bx ; movemos el valor a cluster
@@ -160,7 +158,7 @@ load_file: ; ds:si = dirrecion al nombre
 				add word [package_segment], 1000h
 				jmp .cluster_loop ; volvemos a cargar
 
-		end_cluster_iteration:
+		.end_cluster_iteration:
 			pop es
 			pop di
 			pop cx
@@ -201,10 +199,10 @@ load_file: ; ds:si = dirrecion al nombre
 
 		.clear_loop:
 			; vamos a escribir 512 bytes en 0 desde 0xAE00 para limpiar el package
-			mov word [di], 0
+			mov byte [di], 0
 			inc di ; incrementamos memoria
 			dec bx ; decrementamos contador
-			cmp bx, 0
+			cmp bx, 1
 			jne .clear_loop
 
 		pop bx
@@ -229,9 +227,11 @@ load_file: ; ds:si = dirrecion al nombre
 
 			push ax
 			push bx
+
+			mov dl, [drive_number] ; pasamos drive number a dl para que la siguiente aplicacion en arrancar pueda saber cual es
 			retf
 
-		;; datos!
+		; datos!
 		should_run: db 0
 		cluster: dw 0
 		root_pos: dw 8000h

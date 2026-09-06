@@ -1,4 +1,22 @@
-delay:
+print: ;; PRINT DE BIOS
+	; la direccion del mensaje esta en SI
+	mov ah, 0x0E
+	mov al, [si]
+	int 10h
+
+	inc si
+	cmp byte [si], 0
+	jne print
+
+	mov al, 0x0D
+	int 10h
+
+	mov al, 0x0A
+	int 10h
+
+	ret
+
+delay: ;; DELAY
 	; 18,2 ticks == 1 sec
 	; 55ms == 1 tick
 	; ticks a esperar en SI
@@ -29,4 +47,4 @@ delay:
 		pop ax ; restauramos valores
 		ret
 
-origin_time dw 0
+	origin_time dw 0
