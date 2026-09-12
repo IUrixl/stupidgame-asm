@@ -1,31 +1,13 @@
 player:
-	.pos_x: dw 0
-	.pos_y: dw 0
+	.pos_x: dw 128
+	.pos_y: dw 150
 
 	player_update:
 		push ax
 
 		.keyboard:
 			;; keycodes en https://www.fountainware.com/EXPL/bios_key_codes.htm
-			
-			.key_w:
-				mov al, 0x11
-				call get_key_state
-
-				cmp al, 1
-				jne .key_s
-
-				sub word [player.pos_y], 1
-
-			.key_s:
-				mov al, 0x1f
-				call get_key_state
-
-				cmp al, 1
-				jne .key_a
-
-				add word [player.pos_y], 1
-
+		
 			.key_a:
 				mov al, 0x1e
 				call get_key_state
@@ -40,10 +22,19 @@ player:
 				call get_key_state
 
 				cmp al, 1
-				jne .end_keyboard
+				jne .key_space
 
 				add word [player.pos_x], 1
 
+			.key_space:
+				mov al, 0x39
+				call get_key_state
+
+				cmp al, 1
+				jne .end_keyboard
+
+				; logica de disparo aqui
+				
 		; end of the keyboard jump
 		.end_keyboard:
 
