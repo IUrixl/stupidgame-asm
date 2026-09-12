@@ -1,0 +1,5 @@
+*.log
+bins/
+build/
+info/
+src/pseudocode
