@@ -21,12 +21,50 @@ clear_back:
 	pop cx
 	pop ax
 
-	ret	
+	ret
+
+render_background: ;dl asset id
+	push ax
+	push bx
+	push cx
+	push es
+	push di
+	push ds
+	push si
+
+	mov es, [graphics.back_buffer]
+	mov di, 0 ; apuntamos al backbuffer antes de cambiar ds:si
+
+	call get_asset
+	mov ds, bx
+	mov si, cx ; apuntamos al asset
+	add si, 7 ; saltamos el header
+
+	mov cx, 32000 ; 32k words
+
+	cld
+	rep movsw
+
+	pop si
+	pop ds
+	pop di
+	pop es
+	pop cx
+	pop bx
+	pop ax
+	ret
 
 render_sprite: ;ax = offset_x ; bx = offset_y, ; dl = asset_id
 	; vamos a buscar el sprite asset_id en la tabla para coger segment y offset
 	push cx ; guardamos cx por que lo vamos a usar como ayudante todo el rato
-	call get_asset_position
+
+	; cargamos el segment y offset del asset
+	push bx ; guardamos el offset_y por que la firma de get_asset lo usa como return
+	call get_asset
+	mov [graphics.rendering_segment], bx
+	mov [graphics.rendering_offset], cx
+	pop bx
+
 	call load_header
 	
 	mov word [graphics.rendering_offx], ax
@@ -92,15 +130,21 @@ render_sprite: ;ax = offset_x ; bx = offset_y, ; dl = asset_id
 				cmp bx, 0
 				jl .prepare_next
 
-				; si seguimos aqui es que podemos dibujar el pixel, preparamos todo para la llamada
-				; tenemos que mover la y a bh y el pixel a bl
-				push ax
-				mov ax, bx ; movemos y a ax
-				mov bh, al
-				mov bl, [graphics.rendering_pixel] ; movemos el color
-				pop ax ; restauramos ax con el valor
+				; si seguimos aqui es que podemos dibujar el pixel, pintamos un pixel con la funcion incorporada para maximo rendimiento
+					push es
+					push di
 
-				call pixel ;ax = x ; bh = y; bl = color :)
+					mov es, [graphics.back_buffer] ; apuntamos al back buffer
+
+					imul bx, bx, 320 ; multiplicamos por 320
+					mov di, ax ; cargamos la X en si
+					add di, bx ; sumamos y * 320 para cumplir la formula VGA OFFSET = (y*320)+x
+
+					mov al, [graphics.rendering_pixel]
+					mov [es:di], al ; dibujamos en backbuffer
+
+					pop di
+					pop es
 
 				; se prepara el siguiente
 			.prepare_next:
@@ -116,32 +160,6 @@ render_sprite: ;ax = offset_x ; bx = offset_y, ; dl = asset_id
 			pop bx
 			pop ax
 			ret
-
-	get_asset_position:
-		push es
-		push di
-
-		push ax
-		mov ax, 0x2000
-		mov es, ax
-		pop ax ; ponemos es apuntando al segmento de la tabla
-
-		; calculamos offset
-		mov cl, dl
-		mov ch, 0
-		imul cx, cx, 4
-		mov di, cx ; movemos offset a di
-
-		mov cx, [es:di]
-		mov word [graphics.rendering_segment], cx ; leemos los primeros 2 bytes, nos dan el segment (si tienes dudas de pq lee src/utils/assets.asm)
-
-		add di, 2
-		mov cx, [es:di]
-		mov word [graphics.rendering_offset], cx ; leemos los segundos 2 bytes, nos dan el offset
-
-		pop di
-		pop es
-		ret
 
 	load_header:
 		; en teoria todos los assets tendran una cabecera de 7 bytes, siendo los 3 primeros una firma (magic), y los otros 4, ancho y altura, dividido en 2 bytes

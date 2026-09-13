@@ -27,6 +27,12 @@ _run:
 		mov si, spaceship_uta
 		call load_asset  		; cargamos la nave con id 0
 
+		mov si, background_uta
+		call load_asset
+
+		mov si, shoot_uta
+		call load_asset
+
 	game_loop:
 		.update:
 			; aun no hay limites de fps ni nada sol obucle
@@ -38,6 +44,7 @@ _run:
 		.render:
 			call clear_back	; limpiamos backbuffer
 
+			call .background_renderer
 			call player_render ; todo se dibuja en el backbuffer
 
 			call render_buffer ; cargamos el backbuffer en el VGA
@@ -45,6 +52,11 @@ _run:
 			jmp .update
 
 	jmp $
+
+	.background_renderer:
+			mov dl, 1 ; asset id
+			call render_background ; funcion custom para dibujar backgrounds de forma rapida y eficiente
+			ret
 
 %include "src/utils/assets.asm" ;; libreria para gestionar assets
 %include "src/utils/graphics.asm" ;; libreria para dibujar jijij jeje
@@ -55,4 +67,6 @@ _run:
 
 data:
 	drive_number db 0
-	spaceship_uta db "SP_SHIP UTA"
+	spaceship_uta db "SP_SHIP UTA" ; id 0
+	background_uta db "BACKGR  UTA" ; id 1
+	shoot_uta db "SHOOT   UTA" ; id 2

@@ -2,6 +2,27 @@
 ; mucho de esto se parece a disk.asm, pero aqui buscamos cargar los assets en ciertos puntos
 ; de la memoria y ir incrementandolo y guardandolo en una lookup table
 
+get_asset: ; dl = id ;; -> bx | segment, cx | offset
+	push es
+	push di
+	push dx
+
+	; tabla
+	mov bx, [assets.table_entry_segment]
+	mov es, bx ; apuntamos a la tabla de assets
+
+	; offset
+	mov dh, 0 ; ponemos en el registro DX solo el id y calculamos el offset
+	imul dx, dx, 4 ; multiplicamos por 4 bytes, el tamaño de una entrada
+	mov di, dx; apuntamos el offset al calculado
+
+	mov bx, [es:di]   ; segment
+	mov cx, [es:di+2] ; offset
+
+	pop dx
+	pop di
+	pop es
+	ret
 
 load_asset: ; ds:si = direccion al nombre del asset
 	push es
@@ -28,7 +49,7 @@ load_asset: ; ds:si = direccion al nombre del asset
 
 		add word [assets.root_pos], 32
 		jmp root_lookup
-	
+
 	register_asset:
 		; vamos a guardar el cluster
 		add word [assets.root_pos], 26 ; empieza en 26
@@ -137,6 +158,7 @@ load_asset: ; ds:si = direccion al nombre del asset
 		add ax, [assets.assets_segment] ; calculamos en que segmento estamos ahora
 
 		mov bx, [assets.assets_offset] ; cargamos el offset
+		add bx, ax
 
 		mov word [es:di], ax ; movemos el segment
 		add di, 2
