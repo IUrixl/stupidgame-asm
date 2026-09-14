@@ -38,13 +38,34 @@ render_background: ;dl asset id
 	call get_asset
 	mov ds, bx
 	mov si, cx ; apuntamos al asset
-	add si, 7 ; saltamos el header
+	add si, 7 ; saltamos header
 
-	mov cx, 32000 ; 32k words
+	mov cx, 32000
 
-	cld
-	rep movsw
+	.plot_word:
+		cmp cx, 0
+		je .end_plot
 
+		mov ax, [ds:si]
+		mov [es:di], ax ; pintamos 2 pixeles
+
+		sub cx, 1
+
+		; nos movemos en el backbuffer
+		add di, 2 ; no puede hacer overflow, en 13h el maximo del VGA es de 64k bytes
+
+		; nos movemos en asset
+		add si, 2
+		jnc .plot_word ; no carry? al siguiente
+		; overflow
+		mov si, 0
+		mov ax, ds
+		add ax, 1000h
+		mov ds, ax
+
+		jmp .plot_word
+
+	.end_plot
 	pop si
 	pop ds
 	pop di
@@ -149,6 +170,15 @@ render_sprite: ;ax = offset_x ; bx = offset_y, ; dl = asset_id
 				; se prepara el siguiente
 			.prepare_next:
 				add di, 1 ; avanzamos el offset
+				jnc .next_cx_calc
+				mov di, 0
+				push ax ; hay q usar ax para sumar en es xddd
+				mov ax, es
+				add ax, 1000h
+				mov es, ax ; movemos el nuevo valor
+				pop ax
+
+				.next_cx_calc:
 				add cx, 1 ; avanzamos el recorrido
 				jmp .plot
 			

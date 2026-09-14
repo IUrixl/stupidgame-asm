@@ -31,7 +31,7 @@ _run:
 		call load_asset
 
 		mov si, shoot_uta
-		call load_asset
+		;; call load_asset
 
 	game_loop:
 		.update:

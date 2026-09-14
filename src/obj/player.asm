@@ -1,5 +1,5 @@
 player:
-	.pos_x: dw 128
+	.pos_x: dw 144
 	.pos_y: dw 150
 
 	player_update:

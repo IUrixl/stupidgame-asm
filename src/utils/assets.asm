@@ -49,7 +49,7 @@ load_asset: ; ds:si = direccion al nombre del asset
 
 		add word [assets.root_pos], 32
 		jmp root_lookup
-
+	
 	register_asset:
 		; vamos a guardar el cluster
 		add word [assets.root_pos], 26 ; empieza en 26
@@ -103,16 +103,18 @@ load_asset: ; ds:si = direccion al nombre del asset
 				jmp .process_next
 
 			.process_next:
-				cmp bx, 0xFF8 ; comprobamos si es el ultimo cluster
-				jae load_clusters.end_cluster_iteration ; explicacion en src/utils/disk.asm
-
-				mov [assets.cluster], bx; guardamos el siguiente cluster
-
-				add word [assets.assets_offset], 512 
-				jnc .cluster_loop
+				add word [assets.assets_offset], 512
+				jnc .check_next
 				; overflown
 				add word [assets.assets_segment], 1000h
-				jmp .cluster_loop
+
+				.check_next:
+					cmp bx, 0xFF8 ; comprobamos si es el ultimo cluster
+					jae load_clusters.end_cluster_iteration ; explicacion en src/utils/disk.asm
+
+					mov [assets.cluster], bx; guardamos el siguiente cluster
+					jmp .cluster_loop
+
 
 		.end_cluster_iteration:
 		pop es
@@ -156,9 +158,8 @@ load_asset: ; ds:si = direccion al nombre del asset
 		; calculamos los valores que escribiremos en la tabla
 		mov ax, [assets.assets_entry_segment] 
 		add ax, [assets.assets_segment] ; calculamos en que segmento estamos ahora
-
+		
 		mov bx, [assets.assets_offset] ; cargamos el offset
-		add bx, ax
 
 		mov word [es:di], ax ; movemos el segment
 		add di, 2

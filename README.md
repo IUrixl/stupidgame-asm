@@ -1,4 +1,6 @@
 # STUPIDGAME ASM
+![build](https://img.shields.io/badge/BUILD-BackBufferBeta1-red?style=for-the-badge) ![src_ver](https://img.shields.io/badge/SOURCE%20VERSION-2.00-blue?style=for-the-badge)
+
 As its name states, this is a stupid project made just to grasp more the basics of assembly. Im not an expert, i tried to comment everything i considered important but made it in spanish (since im spanish) so i could re-read the code later on and improve it, dont be too harsh on me, i know my code could be better!
 
 ## About the runtime
@@ -13,6 +15,9 @@ This project has its own file extensions, such as UTA (Uriel Texture Assembly) f
 For the keyboard controller src/utils/keyboard.asm modifies the IVT 0000:0024 hooking a custom keyboard function that detects the make / break code of the key and toggles its state on a 128 byte reserved table. 
 
 I'll be adding more info about how the project works!
+
+## Changelog
+Feel free to read the [changelog](https://github.com/IUrixl/stupidgame-asm/blob/main/CHANGELOG.md).
 
 ## Execution
 I haven't tried it outside qemu, but theoretically you could mount the image to a usb (or any other device) and load it bare-metal if you use BIOS legacy (as i havent used UEFI but BIOS for the entirety of the project).
