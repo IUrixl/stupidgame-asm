@@ -1,3 +1,6 @@
+# Build Beta2 Release [2.00]
+Releasing the built image of the lastest source version [2.00]
+
 # Changelog 14.09.2026 [2.00]
 Fixed stupid bug i made and forgot to release patch.\
 Fixed bug with cluster loading on assets.asm, it wasnt getting the offset right as the last cluster wouldnt sum the offset before loading next one.\
