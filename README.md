@@ -1,5 +1,5 @@
 # STUPIDGAME ASM
-![build](https://img.shields.io/badge/BUILD-BackBufferBeta1-red?style=for-the-badge) ![src_ver](https://img.shields.io/badge/SOURCE%20VERSION-2.00-blue?style=for-the-badge)
+![build](https://img.shields.io/badge/BUILD-Beta2-red?style=for-the-badge) ![src_ver](https://img.shields.io/badge/SOURCE%20VERSION-2.00-blue?style=for-the-badge)
 
 As its name states, this is a stupid project made just to grasp more the basics of assembly. Im not an expert, i tried to comment everything i considered important but made it in spanish (since im spanish) so i could re-read the code later on and improve it, dont be too harsh on me, i know my code could be better!
 
